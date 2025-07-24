@@ -3,73 +3,65 @@ import random
 
 st.set_page_config(page_title="Game Tebak Angka", page_icon="🎯")
 
-# Inisialisasi state
+st.title("🎯 GAME TEBAK ANGKA 👌")
+
+# Inisialisasi session state
 if "level" not in st.session_state:
     st.session_state.level = 1
-    st.session_state.max_level = 10
-    st.session_state.batas = 10
-    st.session_state.angka_rahasia = random.randint(1, 10)
-    st.session_state.jumlah_tebakan = 0
-    st.session_state.maks_tebakan = 5
-    st.session_state.game_over = False
-    st.session_state.menang = False
+if "maxlevel" not in st.session_state:
+    st.session_state.maxlevel = 50
+if "batas" not in st.session_state:
+    st.session_state.batas = st.session_state.level * 5
+if "angkarandom" not in st.session_state:
+    st.session_state.angkarandom = random.randint(1, st.session_state.batas)
+if "jumlahtebakan" not in st.session_state:
+    st.session_state.jumlahtebakan = 0
+if "makstebakan" not in st.session_state:
+    st.session_state.makstebakan = 5 + ((st.session_state.level - 1) // 2)
+if "pesan" not in st.session_state:
+    st.session_state.pesan = ""
 
-st.title("🎯 Game Tebak Angka Berlevel")
+st.subheader(f"📈 LEVEL {st.session_state.level}")
+st.write(f"Tebak angka dari 1 sampai {st.session_state.batas}")
+st.write(f"🎯 Kesempatan kamu: {st.session_state.makstebakan - st.session_state.jumlahtebakan}x")
 
-level = st.session_state.level
-batas = level * 10
-maks_tebakan = 5 + ((level - 1) // 2)
+tebakan = st.number_input("Masukkan tebakanmu:", min_value=1, max_value=st.session_state.batas, step=1)
 
-if st.session_state.batas != batas:
-    st.session_state.batas = batas
-    st.session_state.angka_rahasia = random.randint(1, batas)
-    st.session_state.jumlah_tebakan = 0
-    st.session_state.maks_tebakan = maks_tebakan
-    st.session_state.game_over = False
-    st.session_state.menang = False
+tombol = st.button("Tebak!")
 
-st.subheader(f"Level {level}")
-st.write(f"Tebak angka dari 1 sampai **{batas}**")
-st.write(f"Kesempatan: **{maks_tebakan - st.session_state.jumlah_tebakan}** kali")
-
-if not st.session_state.game_over:
-    tebakan = st.number_input("Masukkan tebakanmu:", min_value=1, max_value=batas, step=1)
-
-    if st.button("Tebak"):
-        st.session_state.jumlah_tebakan += 1
-        if tebakan < st.session_state.angka_rahasia:
-            st.warning("Tebakanmu terlalu kecil!")
-        elif tebakan > st.session_state.angka_rahasia:
-            st.warning("Tebakanmu terlalu besar!")
-        else:
-            st.success("🎉 Selamat! Kamu benar!")
-            st.session_state.menang = True
-            st.session_state.game_over = True
-
-        if st.session_state.jumlah_tebakan >= st.session_state.maks_tebakan and not st.session_state.menang:
-            st.error(f"💀 Game Over! Angka yang benar adalah {st.session_state.angka_rahasia}")
-            st.session_state.game_over = True
-
-# Tombol setelah menang/kalah
-if st.session_state.game_over:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.session_state.menang and level < st.session_state.max_level:
-            if st.button("👉 Lanjut ke Level Berikutnya"):
-                st.session_state.level += 1
-                st.session_state.batas = st.session_state.level * 10
-                st.session_state.angka_rahasia = random.randint(1, st.session_state.batas)
-                st.session_state.jumlah_tebakan = 0
-                st.session_state.maks_tebakan = 5 + ((st.session_state.level - 1) // 2)
-                st.session_state.game_over = False
-                st.session_state.menang = False
-                st.rerun()
-        elif st.session_state.menang and level == st.session_state.max_level:
+if tombol:
+    st.session_state.jumlahtebakan += 1
+    
+    if tebakan < st.session_state.angkarandom:
+        st.session_state.pesan = "⬇️ Tebakanmu terlalu kecil ❌"
+    elif tebakan > st.session_state.angkarandom:
+        st.session_state.pesan = "⬆️ Tebakanmu terlalu besar ❌"
+    else:
+        st.success("✅ Yeay Benar!")
+        st.session_state.level += 1
+        if st.session_state.level > st.session_state.maxlevel:
             st.balloons()
-            st.success("🏁 Kamu berhasil menyelesaikan semua level!")
+            st.success("🎉 SELAMAT! Kamu telah menyelesaikan semua level 🎉")
+            st.stop()
+        st.session_state.batas = st.session_state.level * 5
+        st.session_state.angkarandom = random.randint(1, st.session_state.batas)
+        st.session_state.jumlahtebakan = 0
+        st.session_state.makstebakan = 5 + ((st.session_state.level - 1) // 2)
+        st.rerun()
 
-    with col2:
-        if st.button("🔁 Mulai dari awal"):
-            for key in list(st.session_state.keys()):
+    if st.session_state.jumlahtebakan >= st.session_state.makstebakan:
+        st.error(f"\n❌ Kamu gagal! Angka yang benar adalah {st.session_state.angkarandom}")
+        st.warning("💀 GAME OVER 💀")
+        if st.button("🔁 Mulai Lagi"):
+            for key in st.session_state.keys():
                 del st.session_state[key]
             st.rerun()
+
+if st.session_state.pesan:
+    st.info(st.session_state.pesan)
+
+st.markdown("""
+---
+👨‍💻 Developer: Steve  
+📢 Jangan lupa beri tanggapan, kami akan update! 🔧
+""")
