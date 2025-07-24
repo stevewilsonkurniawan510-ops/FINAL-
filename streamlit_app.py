@@ -63,7 +63,7 @@ if st.session_state.game_over:
                 st.session_state.maks_tebakan = 5 + ((st.session_state.level - 1) // 2)
                 st.session_state.game_over = False
                 st.session_state.menang = False
-                st.experimental_rerun()
+                st.rerun()
         elif st.session_state.menang and level == st.session_state.max_level:
             st.balloons()
             st.success("🏁 Kamu berhasil menyelesaikan semua level!")
